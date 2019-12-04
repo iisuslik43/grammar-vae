@@ -59,7 +59,7 @@ def to_one_hot(smiles):
     return one_hot
 
 
-if __name__ == '__main__':
+def run_main():
     f = open('data/biocad_reactions_dataset.smi', 'r')
     L = []
 
@@ -84,3 +84,7 @@ if __name__ == '__main__':
     h5f.create_dataset('data', data=OH)
     h5f.close()
     print(OH.shape)
+
+
+if __name__ == '__main__':
+    run_main()

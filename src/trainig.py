@@ -31,13 +31,14 @@ class VaeLoss(nn.Module):
     def __init__(self):
         super(VaeLoss, self).__init__()
         self.cross_entropy = torch.nn.CrossEntropyLoss()
+        self.kl_weight = 1
 
     def forward(self, y, logits, kl_loss):
         logits = logits.view(-1, logits.size(-1))
         y = y.view(-1)
 
         reconstruction_loss = self.cross_entropy(logits, y)
-        return KL_WEIGHT * kl_loss + reconstruction_loss
+        return self.kl_weight * kl_loss + reconstruction_loss
 
 
 def draw_losses(train_losses, test_losses):
@@ -47,13 +48,9 @@ def draw_losses(train_losses, test_losses):
     plt.show()
 
 
-if __name__ == '__main__':
-    os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
+def train():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     BATCH_SIZE = 100
-    OUTPUT_SIZE = NCHARS
-    KL_WEIGHT = 1
     N_EPOCHS = 10
 
     # Load data
@@ -92,3 +89,9 @@ if __name__ == '__main__':
                     cur_losses.append(test_loss)
                 test_losses.append(np.mean(cur_losses))
     draw_losses(train_losses, test_losses)
+
+
+if __name__ == '__main__':
+    os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+    train()
+
