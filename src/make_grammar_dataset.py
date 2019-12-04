@@ -59,7 +59,7 @@ def to_one_hot(smiles):
     return one_hot
 
 
-def run_main():
+def grammar_dataset():
     f = open('data/biocad_reactions_dataset.smi', 'r')
     L = []
 
@@ -87,4 +87,4 @@ def run_main():
 
 
 if __name__ == '__main__':
-    run_main()
+    grammar_dataset()
