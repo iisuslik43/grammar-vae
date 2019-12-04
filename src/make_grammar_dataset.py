@@ -6,7 +6,6 @@ import numpy as np
 import h5py
 from tqdm import tqdm
 
-DATASET_LEN = 10000
 MAX_LEN = 300
 NCHARS = len(reactions_grammar.GCFG.productions())
 
@@ -59,7 +58,7 @@ def to_one_hot(smiles):
     return one_hot
 
 
-def grammar_dataset():
+def grammar_dataset(dataset_len=10000):
     f = open('data/biocad_reactions_dataset.smi', 'r')
     L = []
 
@@ -69,7 +68,7 @@ def grammar_dataset():
     f.close()
 
     step = 100
-    max_len = min(len(L), DATASET_LEN)
+    max_len = min(len(L), dataset_len)
     print(f'Trying to save {max_len}/{len(L)} examples')
     OH = None
     for i in tqdm(range(0, max_len, step)):

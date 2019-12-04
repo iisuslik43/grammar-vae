@@ -54,10 +54,9 @@ def draw_losses(train_losses, test_losses):
     plt.show()
 
 
-def train():
+def train(n_epochs=20):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     BATCH_SIZE = 256
-    N_EPOCHS = 20
     wandb.init(project="grammar-vae")
 
     # Load data
@@ -74,7 +73,7 @@ def train():
 
     wandb.watch(model)
 
-    for epoch in tqdm(range(1, N_EPOCHS + 1)):
+    for epoch in tqdm(range(1, n_epochs + 1)):
         for step, X_batch in enumerate(dataset_train, 1):
             optimizer.zero_grad()
             x = X_batch.transpose(-2, -1).float().to(device)
@@ -113,5 +112,4 @@ def train():
 
 
 if __name__ == '__main__':
-    os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
     train()
