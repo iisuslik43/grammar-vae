@@ -6,10 +6,10 @@ import numpy as np
 import h5py
 from tqdm import tqdm
 
-
-
+DATASET_LEN = 10000
 MAX_LEN = 300
 NCHARS = len(reactions_grammar.GCFG.productions())
+
 
 def get_reactions_tokenizer(cfg):
     long_tokens = list(filter(lambda a: len(a) > 1, cfg._lexical_index.keys()))
@@ -42,9 +42,15 @@ def to_one_hot(smiles):
     tokenize = get_reactions_tokenizer(reactions_grammar.GCFG)
     tokens = list(map(tokenize, smiles))
     parser = nltk.ChartParser(reactions_grammar.GCFG)
-    parse_trees = [list(parser.parse(t))[0] for t in tokens]
+    parse_trees = []
+    for t in tokens:
+        try:
+            parse_trees.append(list(parser.parse(t))[0])
+        except (ValueError, StopIteration, IndexError) as e:
+            pass
     productions_seq = [tree.productions() for tree in parse_trees]
-    indices = [np.array([prod_map[prod] for prod in entry], dtype=int) for entry in productions_seq]
+    indices = [np.array([prod_map[prod] for prod in entry], dtype=int)
+               for entry in productions_seq if len(entry) <= MAX_LEN]
     one_hot = np.zeros((len(indices), MAX_LEN, NCHARS), dtype=np.float32)
     for i in range(len(indices)):
         num_productions = len(indices[i])
@@ -54,8 +60,6 @@ def to_one_hot(smiles):
 
 
 if __name__ == '__main__':
-    # f = open('grammarVAE/data/250k_rndm_zinc_drugs_clean.smi','r')
-    # f = open('data/biocad_dataset.smi','r')
     f = open('data/biocad_reactions_dataset.smi', 'r')
     L = []
 
@@ -66,23 +70,17 @@ if __name__ == '__main__':
     f.close()
 
     step = 100
-    max_len = min(len(L), 1000)
+    max_len = min(len(L), DATASET_LEN)
     OH = None
     for i in tqdm(range(0, max_len, step)):
         # print('Processing: i=[' + str(i) + ':' + str(i+100) + ']')
-        try:
-            onehot = to_one_hot(L[i:i + step])
-            if OH is None:
-                OH = onehot
-            else:
-                OH = np.concatenate((OH, onehot), axis=0)
-        except (ValueError, IndexError, StopIteration) as e:
-            print('WTF happened: ' + str(e))
-            pass
-    print(OH.shape)
+        onehot = to_one_hot(L[i:i + step])
+        if OH is None:
+            OH = onehot
+        else:
+            OH = np.concatenate((OH, onehot), axis=0)
 
-    # h5f = h5py.File('grammarVAE/data/zinc_grammar_dataset.h5','w')
-    # h5f = h5py.File('data/biocad_grammar_dataset.h5','w')
     h5f = h5py.File('data/biocad_reactions_grammar_dataset.h5', 'w')
     h5f.create_dataset('data', data=OH)
     h5f.close()
+    print(OH.shape)
