@@ -1,3 +1,4 @@
 data
 checkpoints
 src/log
+**/__pycache__/

@@ -4,11 +4,11 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-from model import GrammarVAE
-from stack import Stack
+from src.model import GrammarVAE
+from src.stack import Stack
 
-from util import load_data, make_nltk_tree
-from train import ENCODER_HIDDEN, Z_SIZE, DECODER_HIDDEN, OUTPUT_SIZE
+from src.util import load_data, make_nltk_tree
+from src.train import ENCODER_HIDDEN, Z_SIZE, DECODER_HIDDEN, OUTPUT_SIZE
 
 torch.manual_seed(10)
 

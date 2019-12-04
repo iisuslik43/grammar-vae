@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-
-from encoder import Encoder
+from src.make_grammar_dataset import NCHARS, MAX_LEN
+from src.encoder import Encoder
 
 class Decoder(nn.Module):
     """RNN decoder that reconstructs the sequence of rules from laten z"""
@@ -19,7 +19,7 @@ class Decoder(nn.Module):
         elif rnn_type == 'gru':
             self.rnn = nn.GRU(hidden_size, hidden_size, batch_first=True)
         else:
-            raise ValueError('Select rnn_type from [lstm, gru]')
+            raise ValueError('Wrong rnn_type, should be from [lstm, gru]')
 
         self.relu = nn.ReLU()
 
@@ -34,52 +34,13 @@ class Decoder(nn.Module):
         """
         x = self.linear_in(z)
         x = self.relu(x)
-
         # The input to the rnn is the same for each timestep: it is z.
         x = x.unsqueeze(1).expand(-1, max_length, -1)
-        hx = Variable(torch.zeros(x.size(0), self.hidden_size))
+        hx = torch.zeros(x.size(0), self.hidden_size).reshape(1, x.size(0), self.hidden_size)
         hx = (hx, hx) if self.rnn_type == 'lstm' else hx
-
         x, _ = self.rnn(x, hx)
 
         x = self.relu(x)
         x = self.linear_out(x)
         return x
 
-
-if __name__ == '__main__':
-    import h5py
-
-    # First run the encoder
-    Z_DIM = 2
-    BATCH_SIZE = 100
-    MAX_LENGTH = 15
-    OUTPUT_SIZE = 12
-
-    # Load data
-    data_path = '../data/eq2_grammar_dataset.h5'
-    f = h5py.File(data_path, 'r')
-    data = f['data']
-
-    # Create encoder
-    encoder = Encoder(10, Z_DIM)
-
-    # Pass through some data
-    x = torch.from_numpy(data[:BATCH_SIZE]).transpose(-2, -1).float() # shape [batch, 12, 15]
-    x = Variable(x)
-    _, y = x.max(1) # The rule index
-
-
-    mu, sigma = encoder(x)
-    z = encoder.sample(mu, sigma)
-    kl = encoder.kl(mu, sigma)
-
-    decoder = Decoder(Z_DIM, 10, OUTPUT_SIZE)
-    logits = decoder(z, max_length=MAX_LENGTH)
-
-    criterion = torch.nn.CrossEntropyLoss()
-    logits = logits.view(-1, logits.size(-1))
-    y = y.view(-1)
-    loss = criterion(logits, y)
-
-    print(loss)

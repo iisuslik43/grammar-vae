@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from model import GrammarVAE
-from util import Timer, AnnealKL, load_data
+from src.model import GrammarVAE
+from src.util import Timer, AnnealKL, load_data
 
 ENCODER_HIDDEN = 20
 Z_SIZE = 2

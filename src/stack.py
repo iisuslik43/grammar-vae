@@ -22,11 +22,3 @@ class Stack:
     @property
     def nonempty(self):
         return bool(self._stack)
-
-
-if __name__ == '__main__':
-    # Usage:
-    from grammar import GCFG, S, T
-
-    stack = Stack(grammar=GCFG, start_symbol=S)
-    print(stack.nonempty)
