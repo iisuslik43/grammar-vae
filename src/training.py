@@ -107,6 +107,7 @@ def train(n_epochs=20):
                        })
         if epoch % 10 == 0:
             torch.save(model, f'model/model_{epoch}.pt')
+            torch.save(model.state_dict(), os.path.join(wandb.run.dir, f'model_{epoch}.pt'))
     torch.save(model, f'model/model.pt')
     torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
