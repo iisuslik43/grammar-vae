@@ -12,6 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from src.util import Timer, AnnealKL
+import wandb
+
 
 
 class GrammarVAETrainingModel(nn.Module):
@@ -41,7 +43,6 @@ class VaeLoss(nn.Module):
     def forward(self, y, logits, kl_loss):
         logits = logits.view(-1, logits.size(-1))
         y = y.view(-1)
-
         reconstruction_loss = self.cross_entropy(logits, y)
         return self.kl_weight * kl_loss + reconstruction_loss
 
@@ -57,6 +58,7 @@ def train():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     BATCH_SIZE = 256
     N_EPOCHS = 20
+    wandb.init(project="grammar-vae")
 
     # Load data
     data_path = 'data/biocad_reactions_grammar_dataset.h5'
@@ -70,6 +72,8 @@ def train():
     model = GrammarVAETrainingModel(device).to(device)
     optimizer = torch.optim.Adam(params=model.parameters())
 
+    wandb.watch(model)
+
     train_losses = []
     test_losses = []
     for epoch in tqdm(range(1, N_EPOCHS + 1)):
@@ -79,7 +83,7 @@ def train():
             _, y = x.max(1)
             logits, kl_loss = model(x)
 
-            criterion.kl_weight = criterion.anneal.alpha(step)
+            #criterion.kl_weight = criterion.anneal.alpha(step)
             loss = criterion(y, logits, kl_loss)
 
             loss.backward()
@@ -98,7 +102,10 @@ def train():
                 test_losses.append(np.mean(cur_losses))
         if epoch % 10 == 0:
             torch.save(model, f'model/model_{epoch}.pt')
+        wandb.log({"Test Loss": test_losses[-1],
+                   "Test KL": kl_loss_test})
     torch.save(model, f'model/model.pt')
+    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
     draw_losses(train_losses, test_losses)
 
 

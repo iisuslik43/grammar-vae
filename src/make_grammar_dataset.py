@@ -63,7 +63,6 @@ def grammar_dataset():
     f = open('data/biocad_reactions_dataset.smi', 'r')
     L = []
 
-    count = -1
     for line in f:
         line = line.strip()
         L.append(line)
@@ -71,6 +70,7 @@ def grammar_dataset():
 
     step = 100
     max_len = min(len(L), DATASET_LEN)
+    print(f'Trying to save {max_len}/{len(L)} examples')
     OH = None
     for i in tqdm(range(0, max_len, step)):
         # print('Processing: i=[' + str(i) + ':' + str(i+100) + ']')
@@ -83,7 +83,7 @@ def grammar_dataset():
     h5f = h5py.File('data/biocad_reactions_grammar_dataset.h5', 'w')
     h5f.create_dataset('data', data=OH)
     h5f.close()
-    print(OH.shape)
+    print(f'Saved {OH.shape[0]}/{len(L)} examples, {max_len - OH.shape[0]} lost')
 
 
 if __name__ == '__main__':
