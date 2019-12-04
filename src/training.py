@@ -74,8 +74,6 @@ def train():
 
     wandb.watch(model)
 
-    train_losses = []
-    test_losses = []
     for epoch in tqdm(range(1, N_EPOCHS + 1)):
         for step, X_batch in enumerate(dataset_train, 1):
             optimizer.zero_grad()
@@ -90,23 +88,28 @@ def train():
             optimizer.step()
 
             train_loss = loss.item()
-            train_losses.append(train_loss)
+
             with torch.no_grad():
-                cur_losses = []
+                reconstruction_loss = criterion.cross_entropy(logits, y)
                 for test_batch in dataset_test:
                     x_test = test_batch.transpose(-2, -1).float().to(device)
                     _, y_test = x_test.max(1)
                     logits_test, kl_loss_test = model(x_test)
                     test_loss = criterion(y_test, logits_test, kl_loss_test).item()
-                    cur_losses.append(test_loss)
-                test_losses.append(np.mean(cur_losses))
+                    reconstruction_loss_test = criterion.cross_entropy(logits_test, y_test)
+                    break
+                test_loss = np.mean(test_loss)
+            wandb.log({"Test Loss": test_loss,
+                       "Test KL": kl_loss_test,
+                       "Test Reconstruction": reconstruction_loss_test,
+                       "Train Loss": train_loss,
+                       "Train KL": kl_loss,
+                       "Train Reconstruction": reconstruction_loss
+                       })
         if epoch % 10 == 0:
             torch.save(model, f'model/model_{epoch}.pt')
-        wandb.log({"Test Loss": test_losses[-1],
-                   "Test KL": kl_loss_test})
     torch.save(model, f'model/model.pt')
     torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
-    draw_losses(train_losses, test_losses)
 
 
 if __name__ == '__main__':
