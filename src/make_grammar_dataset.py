@@ -1,4 +1,5 @@
-from __future__ import print_function
+import sys
+sys.path.append('grammar-vae/src')
 import nltk
 import pdb
 from src import reactions_grammar
