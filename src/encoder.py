@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import h5py
-from torch.autograd import Variable
 from src.make_grammar_dataset import NCHARS, MAX_LEN
 
 

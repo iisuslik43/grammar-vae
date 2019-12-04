@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-from src.make_grammar_dataset import NCHARS, MAX_LEN
-from src.encoder import Encoder
+
 
 class Decoder(nn.Module):
     """RNN decoder that reconstructs the sequence of rules from laten z"""
+
     def __init__(self, input_size, hidden_size, output_size, rnn_type='lstm'):
         super(Decoder, self).__init__()
         self.hidden_size = hidden_size
@@ -43,4 +42,3 @@ class Decoder(nn.Module):
         x = self.relu(x)
         x = self.linear_out(x)
         return x
-

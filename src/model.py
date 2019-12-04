@@ -13,10 +13,11 @@ from src.reactions_grammar import GCFG, START, get_mask
 class GrammarVAE(nn.Module):
     """Grammar Variational Autoencoder"""
 
-    def __init__(self, hidden_encoder_size, z_dim, hidden_decoder_size, output_size, rnn_type):
+    def __init__(self, hidden_encoder_size, z_dim, hidden_decoder_size, output_size, rnn_type, device):
         super(GrammarVAE, self).__init__()
         self.encoder = Encoder(hidden_encoder_size, z_dim)
         self.decoder = Decoder(z_dim, hidden_decoder_size, output_size, rnn_type)
+        self.device = device
 
     def sample(self, mu, sigma):
         """Reparametrized sample from a N(mu, sigma) distribution"""

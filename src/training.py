@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('grammar-vae')
 import torch
 import torch.nn as nn
@@ -11,12 +12,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+
 class GrammarVAETrainingModel(nn.Module):
     """Grammar Variational Autoencoder"""
 
-    def __init__(self):
+    def __init__(self, device):
         super(GrammarVAETrainingModel, self).__init__()
-        self.grammar_vae = GrammarVAE(20, 21, 22, NCHARS, 'gru')
+        self.grammar_vae = GrammarVAE(20, 21, 22, NCHARS, 'gru', device)
+        self.device = device
 
     def forward(self, x):
         mu, sigma = self.grammar_vae.encoder(x)
@@ -62,7 +65,7 @@ def train():
     dataset_test = torch.utils.data.DataLoader(data[test_split:], batch_size=BATCH_SIZE, shuffle=False)
 
     criterion = VaeLoss()
-    model = GrammarVAETrainingModel().to(device)
+    model = GrammarVAETrainingModel(device).to(device)
     optimizer = torch.optim.Adam(params=model.parameters())
 
     train_losses = []
@@ -94,4 +97,3 @@ def train():
 if __name__ == '__main__':
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
     train()
-
