@@ -11,6 +11,7 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from src.util import Timer, AnnealKL
 
 
 class GrammarVAETrainingModel(nn.Module):
@@ -35,6 +36,7 @@ class VaeLoss(nn.Module):
         super(VaeLoss, self).__init__()
         self.cross_entropy = torch.nn.CrossEntropyLoss()
         self.kl_weight = 1
+        self.anneal = AnnealKL(step=1e-3, rate=500)
 
     def forward(self, y, logits, kl_loss):
         logits = logits.view(-1, logits.size(-1))
@@ -53,8 +55,8 @@ def draw_losses(train_losses, test_losses):
 
 def train():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    BATCH_SIZE = 100
-    N_EPOCHS = 10
+    BATCH_SIZE = 256
+    N_EPOCHS = 20
 
     # Load data
     data_path = 'data/biocad_reactions_grammar_dataset.h5'
@@ -70,17 +72,20 @@ def train():
 
     train_losses = []
     test_losses = []
-    for epoch in tqdm(range(N_EPOCHS)):
-        for X_batch in dataset_train:
+    for epoch in tqdm(range(1, N_EPOCHS + 1)):
+        for step, X_batch in enumerate(dataset_train, 1):
             optimizer.zero_grad()
             x = X_batch.transpose(-2, -1).float().to(device)
             _, y = x.max(1)
             logits, kl_loss = model(x)
+
+            criterion.kl_weight = criterion.anneal.alpha(step)
             loss = criterion(y, logits, kl_loss)
+
             loss.backward()
-            train_loss = loss.item()
             optimizer.step()
 
+            train_loss = loss.item()
             train_losses.append(train_loss)
             with torch.no_grad():
                 cur_losses = []
@@ -91,6 +96,9 @@ def train():
                     test_loss = criterion(y_test, logits_test, kl_loss_test).item()
                     cur_losses.append(test_loss)
                 test_losses.append(np.mean(cur_losses))
+        if epoch % 10 == 0:
+            torch.save(model, f'model/model_{epoch}.pt')
+    torch.save(model, f'model/model.pt')
     draw_losses(train_losses, test_losses)
 
 
