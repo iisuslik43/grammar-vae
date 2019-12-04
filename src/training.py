@@ -90,13 +90,13 @@ def train():
             train_loss = loss.item()
 
             with torch.no_grad():
-                reconstruction_loss = criterion.cross_entropy(logits, y)
+                reconstruction_loss = criterion.cross_entropy(logits, y.view(-1))
                 for test_batch in dataset_test:
                     x_test = test_batch.transpose(-2, -1).float().to(device)
                     _, y_test = x_test.max(1)
                     logits_test, kl_loss_test = model(x_test)
                     test_loss = criterion(y_test, logits_test, kl_loss_test).item()
-                    reconstruction_loss_test = criterion.cross_entropy(logits_test, y_test)
+                    reconstruction_loss_test = criterion.cross_entropy(logits_test, y_test.view(-1))
                     break
                 test_loss = np.mean(test_loss)
             wandb.log({"Test Loss": test_loss,
