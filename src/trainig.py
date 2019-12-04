@@ -1,5 +1,5 @@
 import sys
-sys.path.append('grammar-vae/src')
+sys.path.append('grammar-vae')
 import torch
 import torch.nn as nn
 import torch.utils.data

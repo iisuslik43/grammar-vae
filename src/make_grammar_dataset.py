@@ -1,7 +1,6 @@
 import sys
-sys.path.append('grammar-vae/src')
+sys.path.append('grammar-vae')
 import nltk
-import pdb
 from src import reactions_grammar
 import numpy as np
 import h5py
