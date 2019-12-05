@@ -30,7 +30,6 @@ class VaeLoss(nn.Module):
 def train(n_epochs=20):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     BATCH_SIZE = 256
-    wandb.init(project="grammar-vae")
 
     # Load data
     data_path = 'data/biocad_reactions_grammar_dataset.h5'
@@ -44,6 +43,7 @@ def train(n_epochs=20):
     model = GrammarVAETrainingModel(device).to(device)
     optimizer = torch.optim.Adam(params=model.parameters())
 
+    wandb.init(project="grammar-vae")
     wandb.watch(model)
 
     for epoch in tqdm(range(1, n_epochs + 1)):
