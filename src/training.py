@@ -1,34 +1,14 @@
 import sys
-
 sys.path.append('grammar-vae')
 import torch
 import torch.nn as nn
 import torch.utils.data
-from src.make_grammar_dataset import NCHARS, MAX_LEN
-from src.model import GrammarVAE
 import h5py
 from tqdm import tqdm
-import numpy as np
-import matplotlib.pyplot as plt
 import os
 from src.util import Timer, AnnealKL
 import wandb
-
-
-
-class GrammarVAETrainingModel(nn.Module):
-    """Grammar Variational Autoencoder"""
-
-    def __init__(self, device):
-        super(GrammarVAETrainingModel, self).__init__()
-        self.grammar_vae = GrammarVAE(50, 50, 50, NCHARS, 'gru', device)
-        self.device = device
-
-    def forward(self, x):
-        mu, sigma = self.grammar_vae.encoder(x)
-        kl_loss = self.grammar_vae.kl(mu, sigma)
-        logits = self.grammar_vae(x, MAX_LEN)
-        return logits, kl_loss
+from src.grammar_vae import GrammarVAETrainingModel
 
 
 class VaeLoss(nn.Module):
@@ -45,13 +25,6 @@ class VaeLoss(nn.Module):
         y = y.view(-1)
         reconstruction_loss = self.cross_entropy(logits, y)
         return self.kl_weight * kl_loss + reconstruction_loss
-
-
-def draw_losses(train_losses, test_losses):
-    plt.plot(list(range(len(train_losses))), train_losses, color='r', label='train')
-    plt.plot(list(range(len(test_losses))), test_losses, color='b', label='test')
-    plt.legend()
-    plt.show()
 
 
 def train(n_epochs=20):
@@ -105,10 +78,10 @@ def train(n_epochs=20):
                        "Train Reconstruction": reconstruction_loss
                        })
         if epoch % 10 == 0:
-            torch.save(model, f'model/model_{epoch}.pt')
-            torch.save(model.state_dict(), os.path.join(wandb.run.dir, f'model_{epoch}.pt'))
-    torch.save(model, f'model/model.pt')
-    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+            model.save(f'model/model_{epoch}.pt')
+            model.save(os.path.join(wandb.run.dir, f'model_{epoch}.pt'))
+    model.save( f'model/model.pt')
+    model.save(os.path.join(wandb.run.dir, 'model.pt'))
 
 
 if __name__ == '__main__':
