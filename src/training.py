@@ -21,7 +21,7 @@ class GrammarVAETrainingModel(nn.Module):
 
     def __init__(self, device):
         super(GrammarVAETrainingModel, self).__init__()
-        self.grammar_vae = GrammarVAE(20, 21, 22, NCHARS, 'gru', device)
+        self.grammar_vae = GrammarVAE(50, 50, 50, NCHARS, 'gru', device)
         self.device = device
 
     def forward(self, x):
@@ -64,8 +64,8 @@ def train(n_epochs=20):
     f = h5py.File(data_path, 'r')
     data = f['data']
     test_split = int(len(data) * 0.8)
-    dataset_train = torch.utils.data.DataLoader(data[:test_split], batch_size=BATCH_SIZE, shuffle=False)
-    dataset_test = torch.utils.data.DataLoader(data[test_split:], batch_size=BATCH_SIZE, shuffle=False)
+    dataset_train = torch.utils.data.DataLoader(data[:test_split], batch_size=BATCH_SIZE, shuffle=True)
+    dataset_test = torch.utils.data.DataLoader(data[test_split:], batch_size=BATCH_SIZE, shuffle=True)
 
     criterion = VaeLoss()
     model = GrammarVAETrainingModel(device).to(device)
@@ -97,7 +97,6 @@ def train(n_epochs=20):
                     test_loss = criterion(y_test, logits_test, kl_loss_test).item()
                     reconstruction_loss_test = criterion.cross_entropy(logits_test.view(-1, logits.size(-1)), y_test.view(-1))
                     break
-                test_loss = np.mean(test_loss)
             wandb.log({"Test Loss": test_loss,
                        "Test KL": kl_loss_test,
                        "Test Reconstruction": reconstruction_loss_test,
