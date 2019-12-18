@@ -34,9 +34,8 @@ class GrammarVAETrainingModel(nn.Module):
         :param n_batch: number of batches
         :return: (n_batch, d_z) of floats, sample of latent z
         """
-
-        return torch.randn(n_batch, self.q_mu.out_features,
-                           device=self.x_emb.weight.device)
+        return torch.randn(n_batch, 50,
+                           device=self.device)
 
     def sample(self, n_batch, max_len=300):
         """Generating n_batch samples in eval mode (`z` could be

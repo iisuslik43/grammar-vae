@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('grammar-vae')
 import torch
 import torch.nn as nn
@@ -53,7 +54,7 @@ def train(n_epochs=20):
             _, y = x.max(1)
             logits, kl_loss = model(x)
 
-            #criterion.kl_weight = criterion.anneal.alpha(step)
+            # criterion.kl_weight = criterion.anneal.alpha(step)
             loss = criterion(y, logits, kl_loss)
 
             loss.backward()
@@ -68,7 +69,8 @@ def train(n_epochs=20):
                     _, y_test = x_test.max(1)
                     logits_test, kl_loss_test = model(x_test)
                     test_loss = criterion(y_test, logits_test, kl_loss_test).item()
-                    reconstruction_loss_test = criterion.cross_entropy(logits_test.view(-1, logits.size(-1)), y_test.view(-1))
+                    reconstruction_loss_test = criterion.cross_entropy(logits_test.view(-1, logits.size(-1)),
+                                                                       y_test.view(-1))
                     break
             wandb.log({"Test Loss": test_loss,
                        "Test KL": kl_loss_test,
@@ -80,7 +82,7 @@ def train(n_epochs=20):
         if epoch % 10 == 0:
             model.save(f'model/model_{epoch}.pt')
             model.save(os.path.join(wandb.run.dir, f'model_{epoch}.pt'))
-    model.save( f'model/model.pt')
+    model.save(f'model/model.pt')
     model.save(os.path.join(wandb.run.dir, 'model.pt'))
 
 

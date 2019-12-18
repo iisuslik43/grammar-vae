@@ -22,7 +22,7 @@ if __name__ == '__main__':
     model = GrammarVAE(20, 21, 22, NCHARS, 'gru')
 
     # Pass through some data
-    x = torch.from_numpy(data[:BATCH_SIZE]).transpose(-2, -1).float() # shape [batch, 12, 15] - nope
+    x = torch.from_numpy(data[:BATCH_SIZE]).transpose(-2, -1).float()
     #x = Variable(x)
     _, y = x.max(1) # The rule index
     mu, sigma = model.encoder(x)

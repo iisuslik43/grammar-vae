@@ -46,6 +46,7 @@ class GrammarVAE(nn.Module):
             rules = []
             while stack.nonempty:
                 alpha = stack.pop()
+                print(alpha)
                 mask = get_mask(alpha, stack.grammar, as_variable=True)
                 probs = mask * logits[t].exp()
                 probs = probs / probs.sum()

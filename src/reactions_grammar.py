@@ -146,7 +146,7 @@ def get_mask(nonterminal, grammar, as_variable=False):
 def productions_to_string(rules):
     res = ''
     for rule in rules:
-        right = rule.rhs()[-1]
-        if nltk.grammar.is_terminal(right):
-            res += str(right)
+        for right in rule.rhs():
+            if nltk.grammar.is_terminal(right):
+                res += str(right)
     return res
